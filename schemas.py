@@ -11,8 +11,8 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List
 
 # Example schemas (replace with your own):
 
@@ -38,11 +38,37 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Christmas Trees store schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Tree(BaseModel):
+    """
+    Christmas tree product
+    Collection name: "tree"
+    """
+    name: str = Field(..., description="Tree name")
+    description: Optional[str] = Field(None, description="Short description")
+    price: float = Field(..., ge=0, description="Price in USD")
+    size: str = Field(..., description="Size label, e.g., Small, Medium, Large")
+    image: Optional[str] = Field(None, description="Image URL")
+    in_stock: bool = Field(True, description="Availability")
+
+class OrderItem(BaseModel):
+    tree_id: str = Field(..., description="Referenced tree _id as string")
+    name: str
+    price: float
+    quantity: int = Field(..., ge=1)
+
+class Order(BaseModel):
+    """
+    Customer order
+    Collection name: "order"
+    """
+    customer_name: str
+    email: EmailStr
+    address: str
+    city: str
+    postal_code: str
+    items: List[OrderItem]
+    subtotal: float = Field(..., ge=0)
+    shipping: float = Field(..., ge=0)
+    total: float = Field(..., ge=0)
